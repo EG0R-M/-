@@ -1,7 +1,8 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request, jsonify
 from flask_login import LoginManager
 from config import Config
 from app.database import close_db
+from app.extensions import csrf
 
 login_manager = LoginManager()
 
@@ -13,6 +14,14 @@ def create_app():
     login_manager.login_view = 'auth.login'
     login_manager.login_message = 'Пожалуйста, войдите для доступа.'
 
+    @login_manager.unauthorized_handler
+    def unauthorized():
+        if request.path.startswith('/api/'):
+            return jsonify({'error': 'Требуется авторизация'}), 401
+        return render_template('errors/401.html'), 401
+
+    csrf.init_app(app)
+
     app.teardown_appcontext(close_db)
 
     from moduls.user import User
@@ -23,9 +32,45 @@ def create_app():
         db = get_db()
         return db.query(User).get(int(user_id))
 
+    # Jinja2 custom filters
+    @app.template_filter('datetime')
+    def format_datetime(value, fmt='%d.%m.%Y %H:%M'):
+        if value is None:
+            return ''
+        return value.strftime(fmt)
+
+    @app.template_filter('number')
+    def format_number(value):
+        if value is None:
+            return ''
+        return f'{value:,.2f}'.replace(',', ' ')
+
+    # Error handlers
+    @app.errorhandler(404)
+    def not_found(e):
+        return render_template('errors/404.html'), 404
+
+    @app.errorhandler(403)
+    def forbidden(e):
+        return render_template('errors/403.html'), 403
+
+    @app.errorhandler(400)
+    def bad_request(e):
+        return render_template('errors/400.html'), 400
+
+    @app.errorhandler(401)
+    def unauthorized(e):
+        return render_template('errors/401.html'), 401
+
+    @app.errorhandler(500)
+    def server_error(e):
+        return render_template('errors/500.html'), 500
+
     # Регистрация всех blueprint'ов
-    from app.routes import auth, events, bookings, profile, admin, favorites, api, venues, weather
+    from app.routes import auth, events, bookings, profile, admin, favorites, api, venues
     from app.routes.api_venues import api_venues_bp
+    from app.routes.weather import bp as weather_bp
+    from app.routes.user_events import bp as user_events_bp
     
     app.register_blueprint(auth.bp, url_prefix='/auth')
     app.register_blueprint(events.bp, url_prefix='/events')
@@ -35,8 +80,9 @@ def create_app():
     app.register_blueprint(favorites.bp)
     app.register_blueprint(api.bp)
     app.register_blueprint(venues.bp)
-    app.register_blueprint(weather.bp)
+    app.register_blueprint(weather_bp)          # <-- погода
     app.register_blueprint(api_venues_bp)
+    app.register_blueprint(user_events_bp)
 
     @app.route('/')
     def index():

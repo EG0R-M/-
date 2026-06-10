@@ -1,11 +1,29 @@
 {% extends 'base.html' %}
 {% block title %}{{ venue.name }}{% endblock %}
 {% block content %}
-<div class="mb-4">
-    <h1>{{ venue.name }}</h1>
-    <p><strong>Адрес:</strong> {{ venue.address }}</p>
-    <p><strong>Город:</strong> {{ venue.city }}</p>
-    <p><strong>Вместимость:</strong> {{ venue.total_seats }} мест</p>
+
+{% if venue.image_url %}
+    <img src="{{ venue.image_url }}" 
+         class="img-fluid mb-4 rounded"
+         alt="{{ venue.name }}"
+         style="max-height: 400px; width: 100%; object-fit: cover;">
+{% endif %}
+
+<div class="row">
+    <!-- Левая колонка: информация о заведении -->
+    <div class="col-md-6">
+        <div class="mb-4">
+            <h1>{{ venue.name }}</h1>
+            <p><strong>Адрес:</strong> {{ venue.address }}</p>
+            <p><strong>Город:</strong> {{ venue.city }}</p>
+            <p><strong>Вместимость:</strong> {{ venue.total_seats }} мест</p>
+        </div>
+    </div>
+    
+    <!-- Правая колонка: карта -->
+    <div class="col-md-6">
+        <div id="venue-map" style="height: 300px; border-radius: 12px; margin-bottom: 1.5rem;"></div>
+    </div>
 </div>
 
 <h3>Мероприятия в этом заведении</h3>
@@ -15,7 +33,13 @@
         <div class="col-md-4 mb-4">
             <div class="card h-100">
                 {% if event.poster_url %}
-                <img src="{{ event.poster_url }}" class="card-img-top" alt="{{ event.title }}">
+                    <img src="{{ event.poster_url }}" 
+                         class="card-img-top event-card-img" 
+                         alt="{{ event.title }}">
+                {% else %}
+                    <div class="event-placeholder">
+                        <span>🎭 {{ event.category }}</span>
+                    </div>
                 {% endif %}
                 <div class="card-body">
                     <h5 class="card-title">{{ event.title }}</h5>
@@ -24,7 +48,7 @@
                         {{ {'movie':'Кино','theater':'Театр','concert':'Концерт','sport':'Спорт','exhibition':'Выставка'}[event.category] }}
                     </p>
                     {% if event.next_session %}
-                        <p><strong>Ближайший сеанс:</strong> {{ event.next_session.start_time.strftime('%d.%m.%Y %H:%M') }}</p>
+                        <p><strong>Ближайший сеанс:</strong> {{ event.next_session.start_time|datetime }}</p>
                         <p><strong>Цена от:</strong> {{ event.next_session.base_price }} руб.</p>
                     {% else %}
                         <p class="text-muted">Нет ближайших сеансов</p>
@@ -40,4 +64,15 @@
 {% endif %}
 
 <a href="{{ url_for('venues.list_venues') }}" class="btn btn-secondary">← Назад к списку заведений</a>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+{% if yandex_maps_api_key %}
+<script src="https://api-maps.yandex.ru/2.1/?apikey={{ yandex_maps_api_key }}&lang=ru_RU"></script>
+<script src="{{ url_for('static', filename='js/venue_map.js') }}"></script>
+<script>
+    initVenueMap("{{ venue.name }}", "{{ venue.address }}");
+</script>
+{% endif %}
 {% endblock %}

@@ -7,18 +7,13 @@
     <hr class="my-4">
 </div>
 
-<!-- Блок погоды (как был) -->
-<div class="row mb-4">
-    <div class="col-md-6 mx-auto">
-        <div class="card weather-widget">
-            <div class="card-body text-center">
-                <h5 class="card-title">Погода сегодня</h5>
-                <div id="weather-info">
-                    <p>Загрузка...</p>
-                </div>
-            </div>
-        </div>
-    </div>
+<!-- Блок кнопок категорий -->
+<div class="category-buttons mt-4 d-flex flex-wrap gap-2 justify-content-center">
+    <a href="{{ url_for('events.list_events', category='movie') }}" class="btn btn-outline-primary btn-lg">🎬 Кино</a>
+    <a href="{{ url_for('events.list_events', category='theater') }}" class="btn btn-outline-primary btn-lg">🎭 Театр</a>
+    <a href="{{ url_for('events.list_events', category='sport') }}" class="btn btn-outline-primary btn-lg">🏆 Спорт</a>
+    <a href="{{ url_for('events.list_events', category='concert') }}" class="btn btn-outline-primary btn-lg">🎶 Концерты</a>
+    <a href="{{ url_for('events.list_events', category='exhibition') }}" class="btn btn-outline-primary btn-lg">🖼️ Выставки</a>
 </div>
 
 <!-- Карусель популярных мест -->
@@ -41,8 +36,8 @@
 fetch('/weather/api/weather')
     .then(response => response.json())
     .then(data => {
-        const icons = {'rain':'🌧️','snow':'❄️','clouds':'☁️','clear':'☀️'};
-        const icon = icons[data.weather_type] || '☀️';
+        const icons = {'rain':'☂','snow':'❄','clouds':'☁','clear':'☀'};
+        const icon = icons[data.weather_type] || '☀';
         const weatherHtml = `
             <div style="font-size: 3rem;">${icon}</div>
             <div class="display-6">${data.temperature}°C</div>

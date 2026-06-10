@@ -3,6 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme) {
+                document.documentElement.setAttribute('data-theme', savedTheme);
+            } else {
+
+                document.documentElement.setAttribute('data-theme', 'dark');
+            }
+        })();
+    </script>
     <title>{% block title %}TicketBooking{% endblock %}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -19,9 +30,13 @@
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
+                <ul class="navbar-nav ms-auto">
+                                        <!-- Виджет погоды -->
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('events.list_events') }}">🎬 Мероприятия</a>
+                        <a href="{{ url_for('weather.weather_page') }}" class="nav-link weather-nav-link" id="weatherWidget">
+                            <span class="weather-icon">🌡</span>
+                            <span class="weather-temp">--°</span>
+                        </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('events.search') }}">🔍 Поиск</a>
@@ -38,6 +53,9 @@
                                 <li><a class="dropdown-item" href="{{ url_for('profile.bookings') }}">🎟️ Мои билеты</a></li>
                                 <li><a class="dropdown-item" href="{{ url_for('favorites.list_favorites') }}">❤️ Избранное</a></li>
                                 <li><a class="dropdown-item" href="{{ url_for('profile.edit') }}">✏️ Редактировать профиль</a></li>
+                                {% if current_user.role == 'organizer' or current_user.role == 'admin' %}
+                                <li><a class="dropdown-item" href="{{ url_for('user_events.list_events') }}">🎪 Мои мероприятия</a></li>
+                                {% endif %}
                                 <li><hr class="dropdown-divider"></li>
                                 <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">🚪 Выйти</a></li>
                             </ul>
@@ -51,6 +69,7 @@
                                 <ul class="dropdown-menu dropdown-menu-end">
                                     <li><a class="dropdown-item" href="{{ url_for('admin.index') }}">📊 Статистика</a></li>
                                     <li><a class="dropdown-item" href="{{ url_for('admin.events') }}">🎬 Управление событиями</a></li>
+                                    <li><a class="dropdown-item" href="{{ url_for('admin.pending_events') }}">📝 Модерация событий</a></li>
                                     <li><a class="dropdown-item" href="{{ url_for('admin.users') }}">👥 Пользователи</a></li>
                                 </ul>
                             </li>
@@ -90,8 +109,8 @@
 
     <footer class="footer">
         <div class="container">
-            <p class="mb-0">© 2026 TicketBooking System. Все права защищены.</p>
-            <small>Бронирование билетов на мероприятия</small>
+            <p class="mb-0">© 2026 ФИШКА. Все права защищены.</p>
+            <small>«Твой билет в мир впечатлений»</small>
         </div>
     </footer>
 

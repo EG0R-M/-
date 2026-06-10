@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text, DateTime
+from sqlalchemy import Column, Integer, String, Text, DateTime, Float
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 from . import Base
@@ -11,13 +11,13 @@ class Venue(Base):
     address = Column(Text, nullable=False)
     city = Column(String(100), nullable=False)
     description = Column(Text)
+    image_url = Column(String(500), nullable=True)
     total_seats = Column(Integer, default=0)
-    
     created_at = Column(DateTime, server_default=func.now())
     
     # Связи
     events = relationship("Event", back_populates="venue", cascade="all, delete-orphan")
-    seats = relationship("Seat", back_populates="venue", cascade="all, delete-orphan")
+    halls = relationship("Hall", back_populates="venue", cascade="all, delete-orphan")
     
     def __repr__(self):
         return f"<Venue(id={self.id}, name={self.name}, city={self.city})>"
