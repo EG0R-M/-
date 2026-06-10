@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% block title %}Выбор мест{% endblock %}
+{% block content %}
+<h2>Выбор мест на {{ session.event.title }}</h2>
+<p class="text-muted">{{ session.start_time.strftime('%d.%m.%Y %H:%M') }}</p>
+
+<div class="legend mb-3">
+    <span class="badge bg-success">Свободно</span>
+    <span class="badge bg-danger">Занято</span>
+    <span class="badge bg-primary">Выбрано</span>
+</div>
+
+<form method="POST">
+    <table class="seat-map-table">
+        {% for row_num, seat_list in rows.items() %}
+        <tr>
+            <td class="row-label-cell">Ряд {{ row_num }}</td>
+            {% for seat in seat_list %}
+            <td>
+                <input type="checkbox" name="seat_ids" value="{{ seat.id }}" id="seat_{{ seat.id }}"
+                       {% if seat.id in taken_ids %}disabled{% endif %}
+                       class="seat-checkbox">
+                <label for="seat_{{ seat.id }}" 
+                       class="seat-label {% if seat.id in taken_ids %}taken{% endif %}">
+                    {{ seat.seat_number }}
+                </label>
+            </td>
+            {% endfor %}
+            {# Добиваем пустыми ячейками до максимальной ширины ряда #}
+            {% for i in range(seat_list|length, max_seats_per_row) %}
+            <td style="visibility: hidden;"></td>
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    </table>
+    <button type="submit" class="btn btn-primary mt-4">Забронировать выбранные места</button>
+</form>
+{% endblock %}
+
+{% block styles %}{% endblock %}
